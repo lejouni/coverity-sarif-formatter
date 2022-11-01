@@ -1,0 +1,26 @@
+name: "Coverity Sarif Formatter"
+description: "Will use given json v10 format inputfile and create sarif format outputfile from it."
+author: Jouni Lehto
+branding:
+  icon: code
+  color: blue
+inputs:
+  log_level:
+    description: Logging level
+    default: DEBUG
+    required: false
+  inputfile:
+    description: Filename with path which will contain the local scan findings (Coverity Analysis results should be provided in the \"v10\" JSON format produced by the --json-output-v10 option of the cov-format-errors command or the cov-run-desktop command.), example /tmp/coverityFindings.json
+    required: true
+  outputfile:
+    description: Filename with path where it will be created, example /tmp/coverity_results.sarif.json
+    default: ${{github.workspace}}/coverity_results.sarif.json
+    required: false
+
+runs:
+  using: composite
+  steps:
+    # Run the Python script
+    - run: |
+        python3 ${{github.action_path}}/coverityResultsToSarif.py --log_level=${{inputs.log_level}} --inputFile=${{inputs.inputfile}} --outputFile=${{inputs.outputfile}} --url=${{env.cov_url}}
+      shell: bash

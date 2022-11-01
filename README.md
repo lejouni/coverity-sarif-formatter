@@ -1,2 +1,2 @@
 # coverity-sarif-formatter
-This action will greate a sarif format report from json-v10 output.
+This action will create a sarif format report from json-v10 output.
