@@ -45,20 +45,20 @@ def getResults():
             lineNumber = ""
             locations = []
             for event in sorted(cov_issue['events'], key=lambda x: x['eventNumber']):
-                locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["strippedFilePathname"]},"region":{"startLine":f'{int(event["lineNumber"]) if event["lineNumber"] else 1}'}}, 
+                locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":f'{int(event["lineNumber"]) if event["lineNumber"] else 1}'}}, 
                     "message" : {"text": f'Event Set {event["eventTreePosition"]}: {event["eventDescription"]}'}}})
                 if event['main']: 
                     messageText = event['eventDescription']
                     lineNumber = event['lineNumber']
                 if event['events'] and len(event['events']) > 0:
                     for subevent in sorted(event['events'], key=lambda x: x['eventNumber']):
-                        locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["strippedFilePathname"]},"region":{"startLine":f'{int(subevent["lineNumber"]) if subevent["lineNumber"] else 1}'}}, 
+                        locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":f'{int(subevent["lineNumber"]) if subevent["lineNumber"] else 1}'}}, 
                             "message" : {"text": f'Event #{subevent["eventTreePosition"]}: {subevent["eventDescription"]}'}}})
                 if event['remediation']: remediationText = event['eventDescription']
             if not remediationText == "":
                 messageText += f'\nRemediation Advice: {remediationText}'
             sarifIssue['message'] = {"text": cov_issue["checkerName"] + ":" + messageText}
-            sarifIssue['locations'] = [{"physicalLocation":{"artifactLocation":{"uri":cov_issue["strippedMainEventFilePathname"]},"region":{"startLine":f'{int(lineNumber) if lineNumber and not lineNumber == "" else 1}'}}}]
+            sarifIssue['locations'] = [{"physicalLocation":{"artifactLocation":{"uri":cov_issue["mainEventFilePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":f'{int(lineNumber) if lineNumber and not lineNumber == "" else 1}'}}}]
             sarifIssue['partialFingerprints'] = {"primaryLocationLineHash": cov_issue['mergeKey']}
             codeFlowsTable, loctionsFlowsTable = [], []
             threadFlows, loctionsFlows = {}, {}
@@ -107,6 +107,7 @@ if __name__ == '__main__':
             of the cov-format-errors command or the cov-run-desktop command.), example: /tmp/coverityFindings.json", required=False, default="coverity_results-v10.json")
     parser.add_argument('--outputFile', help="Filename with path where it will be created, example: /tmp/coverityFindings.sarif.json", required=False, default="coverity_results.sarif.json")
     parser.add_argument('--url', help="Coverity Connect server url", default="")
+    parser.add_argument('--strip_path', help="Full path to where source folders will start. This path will be removed from the code locations", default="")
     
     args = parser.parse_args()
     #Initializing the logger

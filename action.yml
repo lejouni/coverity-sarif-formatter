@@ -16,11 +16,15 @@ inputs:
     description: Filename with path where it will be created, example /tmp/coverity_results.sarif.json
     default: ${{github.workspace}}/coverity_results.sarif.json
     required: false
+  stripPath:
+    description: Full path to where source folders will start. This path will be removed from the code locations
+    default: ${{github.workspace}}
+    required: false
 
 runs:
   using: composite
   steps:
     # Run the Python script
     - run: |
-        python3 ${{github.action_path}}/coverityResultsToSarif.py --log_level=${{inputs.log_level}} --inputFile=${{inputs.inputfile}} --outputFile=${{inputs.outputfile}} --url=${{env.cov_url}}
+        python3 ${{github.action_path}}/coverityResultsToSarif.py --strip_path=${{inputs.stripPath}} --log_level=${{inputs.log_level}} --inputFile=${{inputs.inputfile}} --outputFile=${{inputs.outputfile}} --url=${{env.cov_url}}
       shell: bash
