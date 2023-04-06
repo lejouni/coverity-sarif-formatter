@@ -4,9 +4,10 @@ import logging
 from os.path import exists
 import sys
 from timeit import default_timer as timer
+import hashlib
 
 __author__ = "Jouni Lehto"
-__versionro__="0.1.2"
+__versionro__="0.1.3"
 
 #Global variables
 args = ""
@@ -59,7 +60,7 @@ def getResults():
                 messageText += f'\nRemediation Advice: {remediationText}'
             sarifIssue['message'] = {"text": cov_issue["checkerName"] + ":" + messageText}
             sarifIssue['locations'] = [{"physicalLocation":{"artifactLocation":{"uri":cov_issue["mainEventFilePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":f'{int(lineNumber) if lineNumber and not lineNumber == "" else 1}'}}}]
-            sarifIssue['partialFingerprints'] = {"primaryLocationLineHash": cov_issue['mergeKey']}
+            sarifIssue['partialFingerprints'] = {"primaryLocationLineHash": hashlib.sha256((f"{cov_issue['mergeKey']}").encode(encoding='UTF-8')).hexdigest()}
             codeFlowsTable, loctionsFlowsTable = [], []
             threadFlows, loctionsFlows = {}, {}
             loctionsFlows['locations'] = locations
