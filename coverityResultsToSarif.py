@@ -43,23 +43,28 @@ def getResults():
                 ruleIds.append(ruleId)
             messageText = ""
             remediationText = ""
-            lineNumber = ""
+            lineNumber = 1
             locations = []
             for event in sorted(cov_issue['events'], key=lambda x: x['eventNumber']):
-                locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":f'{int(event["lineNumber"]) if event["lineNumber"] else 1}'}}, 
+                if event["lineNumber"]: 
+                    lineNumber = int(event["lineNumber"])
+                locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine": lineNumber}}, 
                     "message" : {"text": f'Event Set {event["eventTreePosition"]}: {event["eventDescription"]}'}}})
                 if event['main']: 
                     messageText = event['eventDescription']
                     lineNumber = event['lineNumber']
                 if event['events'] and len(event['events']) > 0:
                     for subevent in sorted(event['events'], key=lambda x: x['eventNumber']):
-                        locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":f'{int(subevent["lineNumber"]) if subevent["lineNumber"] else 1}'}}, 
+                        subLineNumber = 0
+                        if subevent["lineNumber"]: 
+                           subLineNumber = int(subevent["lineNumber"])
+                        locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":subLineNumber}}, 
                             "message" : {"text": f'Event #{subevent["eventTreePosition"]}: {subevent["eventDescription"]}'}}})
                 if event['remediation']: remediationText = event['eventDescription']
             if not remediationText == "":
                 messageText += f'\nRemediation Advice: {remediationText}'
             sarifIssue['message'] = {"text": cov_issue["checkerName"] + ":" + messageText}
-            sarifIssue['locations'] = [{"physicalLocation":{"artifactLocation":{"uri":cov_issue["mainEventFilePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":f'{int(lineNumber) if lineNumber and not lineNumber == "" else 1}'}}}]
+            sarifIssue['locations'] = [{"physicalLocation":{"artifactLocation":{"uri":cov_issue["mainEventFilePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine": lineNumber}}}]
             sarifIssue['partialFingerprints'] = {"primaryLocationLineHash": hashlib.sha256((f"{cov_issue['mergeKey']}").encode(encoding='UTF-8')).hexdigest()}
             codeFlowsTable, loctionsFlowsTable = [], []
             threadFlows, loctionsFlows = {}, {}
