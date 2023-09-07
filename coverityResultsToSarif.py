@@ -59,7 +59,7 @@ def getResults():
                         subLineNumber = 0
                         if subevent["lineNumber"]: 
                            subLineNumber = int(subevent["lineNumber"])
-                        locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":subLineNumber}}, 
+                        locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": subevent["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine":subLineNumber}}, 
                             "message" : {"text": f'Event #{subevent["eventTreePosition"]}: {subevent["eventDescription"]}'}}})
                 if event['remediation']: remediationText = event['eventDescription']
             if not remediationText == "":
