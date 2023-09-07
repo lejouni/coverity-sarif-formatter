@@ -43,16 +43,17 @@ def getResults():
                 ruleIds.append(ruleId)
             messageText = ""
             remediationText = ""
-            lineNumber = 1
+            mainlineNumber = 1
             locations = []
             for event in sorted(cov_issue['events'], key=lambda x: x['eventNumber']):
+                lineNumber = 1
                 if event["lineNumber"]: 
                     lineNumber = int(event["lineNumber"])
                 locations.append({"location":{"physicalLocation":{"artifactLocation":{"uri": event["filePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine": lineNumber}}, 
                     "message" : {"text": f'Event Set {event["eventTreePosition"]}: {event["eventDescription"]}'}}})
                 if event['main']: 
                     messageText = event['eventDescription']
-                    lineNumber = event['lineNumber']
+                    mainlineNumber = event['lineNumber']
                 if event['events'] and len(event['events']) > 0:
                     for subevent in sorted(event['events'], key=lambda x: x['eventNumber']):
                         subLineNumber = 0
@@ -64,7 +65,7 @@ def getResults():
             if not remediationText == "":
                 messageText += f'\nRemediation Advice: {remediationText}'
             sarifIssue['message'] = {"text": cov_issue["checkerName"] + ":" + messageText}
-            sarifIssue['locations'] = [{"physicalLocation":{"artifactLocation":{"uri":cov_issue["mainEventFilePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine": lineNumber}}}]
+            sarifIssue['locations'] = [{"physicalLocation":{"artifactLocation":{"uri":cov_issue["mainEventFilePathname"][len(args.strip_path)+1::].replace("\\","/")},"region":{"startLine": int(mainlineNumber)}}}]
             sarifIssue['partialFingerprints'] = {"primaryLocationLineHash": hashlib.sha256((f"{cov_issue['mergeKey']}").encode(encoding='UTF-8')).hexdigest()}
             codeFlowsTable, loctionsFlowsTable = [], []
             threadFlows, loctionsFlows = {}, {}
